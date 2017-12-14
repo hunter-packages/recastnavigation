@@ -97,7 +97,7 @@ dtNode* dtNodePool::findNode(dtPolyRef id)
 	return 0;
 }
 
-dtNode* dtNodePool::getNode(dtPolyRef id, int nExtra)
+dtNode* dtNodePool::getNode(dtPolyRef id)
 {
 	unsigned int bucket = dtHashRef(id) & (m_hashSize-1);
 	dtNodeIndex i = m_first[bucket];
@@ -108,33 +108,25 @@ dtNode* dtNodePool::getNode(dtPolyRef id, int nExtra)
 			return &m_nodes[i];
 		i = m_next[i];
 	}
-
-	if (m_nodeCount + nExtra >= m_maxNodes)
+	
+	if (m_nodeCount >= m_maxNodes)
 		return 0;
-
-	// add to hash table
-	int n = (dtNodeIndex)m_nodeCount;
-	dtNode* ret = &m_nodes[n];
-
-	// add the nodes from last to first
-	for (int j=n+nExtra ; j>=n; --j)
-	{
-		i = (dtNodeIndex)j;
-		m_nodeCount++;
-
-		// Init node
-		node = &m_nodes[i];
-		node->pidx = 0;
-		node->cost = 0;
-		node->total = 0;
-		node->id = id;
-		node->flags = 0;
-
-		m_next[i] = m_first[bucket];
-		m_first[bucket] = i;
-	}
-
-	return ret;
+	
+	i = (dtNodeIndex)m_nodeCount;
+	m_nodeCount++;
+	
+	// Init node
+	node = &m_nodes[i];
+	node->pidx = 0;
+	node->cost = 0;
+	node->total = 0;
+	node->id = id;
+	node->flags = 0;
+	
+	m_next[i] = m_first[bucket];
+	m_first[bucket] = i;
+	
+	return node;
 }
 
 
